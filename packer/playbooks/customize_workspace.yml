@@ -1,0 +1,55 @@
+---
+- name: Custom setup for my user
+  gather_facts: No
+  hosts: all
+  become: yes
+  become_user: '{{ user }}'
+  tasks: 
+    - name: Download zsh installer
+      get_url: 
+        url: https://github.com/robbyrussell/oh-my-zsh/raw/master/tools/install.sh
+        dest: /tmp/zsh-installer.sh
+        mode: a+x
+    - name: Execute the zsh-installer.sh
+      shell: /tmp/zsh-installer.sh --unattended 
+    - name: Remove the zsh-installer.sh
+      file: path=/tmp/zsh-installer.sh state=absent
+    - name: install vim plugin manager
+      shell: "mkdir -p ~/.vim/autoload ~/.vim/bundle && curl -LSso ~/.vim/autoload/pathogen.vim https://tpo.pe/pathogen.vim"
+    - name: install terraform vim  plugin
+      git:
+        repo: 'https://github.com/hashivim/vim-terraform.git'
+        dest: ~/.vim/bundle/vim-terraform
+    - name: install vim tabular plugin 
+      git:
+        repo: 'https://github.com/godlygeek/tabular.git'
+        dest: ~/.vim/bundle/tabular
+    - name: create script to run vscode
+      template: 
+        src: ../scripts/start-vscode.sh.j2
+        dest: /home/{{ user }}/start-vscode.sh
+        mode: a+x
+    - name: put .zshrc into home
+      template: 
+        src: ../conf/zshrc.j2
+        dest: /home/{{ user }}/.zshrc
+      ignore_errors: yes # only working if running from my local machine, not from ci-cd pipeline
+    - name: put .vimrc into home
+      template:
+        src: ../conf/vimrc
+        dest: "/home/{{ user }}/.vimrc"
+    - name: privcate key for ssh and git 
+      copy:
+        src: ~/.ssh/id_rsa
+        dest: /home/{{ user }}/.ssh/id_rsa
+        mode: g-rw,o-rw
+      ignore_errors: yes # only working if running from my local machine, not from ci-cd pipeline
+    - name: privcate key for ssh and git 
+      copy:
+        src: ~/.ssh/config
+        dest: /home/{{ user }}/.ssh/config
+      ignore_errors: yes # only working if running from my local machine, not from ci-cd pipeline
+    - name: "set zsh as default shell"
+      shell: usermod -s /bin/zsh {{ user }}
+      become_user: root
+

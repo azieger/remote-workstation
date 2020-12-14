@@ -1,0 +1,25 @@
+
+{
+  "variables": {
+    "do_token": "{{env `TF_VAR_workstation_do_token`}}",
+    "cert_file_path": ""
+  },
+  "builders": [
+    {
+      "type"          : "digitalocean",
+      "ssh_username"  : "root",
+      "api_token"     : "{{user `do_token`}}",
+      "image"         : "centos-8-x64",
+      "region"        : "nyc1",
+      "size"          : "s-1vcpu-2gb",
+      "snapshot_name" : "remote-workstation-{{timestamp}}"
+    }],
+  "provisioners": [
+    {
+      "type": "ansible",
+      "playbook_file": "./playbooks/main.yml",
+      "user": "root",
+      "inventory_directory": "./playbooks"     
+    }
+  ]
+}

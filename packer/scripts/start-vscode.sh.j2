@@ -1,0 +1,8 @@
+docker run -d \
+  --name=code-server \
+  -e PUID=$(id -u) \
+  -e PGID=$(id -g) \
+  -p 8443:8443 \
+  -v "/home/{{ user }}/:/config/workspace" \
+  -e PASSWORD="{{ lookup('password', '/tmp/vscodepassword length=15') }}"\
+  ghcr.io/linuxserver/code-server
