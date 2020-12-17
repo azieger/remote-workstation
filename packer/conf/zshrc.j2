@@ -3,13 +3,13 @@
 
 # put custom env vars if any
 {% for line in lookup('file', '~/.zshrc').splitlines() %}
-    {% if 'export' in line %}
-        {{ line }}
-    {% endif %}
+{% if 'export' in line %}
+{{ line }}
+{% endif %}
 {% endfor %}
 
 # Path to your oh-my-zsh installation.
-export ZSH="/home/{{ user }}/.oh-my-zsh"
+export ZSH="/home/{{ workspace_user }}/.oh-my-zsh"
 
 # Set name of the theme to load --- if set to "random", it will
 # load a random theme each time oh-my-zsh is loaded, in which case,

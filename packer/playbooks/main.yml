@@ -2,37 +2,39 @@
 - name: Setup Remote Workstation
   gather_facts: No
   hosts: all
+  user: root
   tasks:
+    - name: Update APT package cache
+      apt: update_cache=yes
+    - name: Upgrade APT to the latest packages
+      apt: upgrade=dist
     - name: update the system
       package:
         name:  "*"
         state: latest
+        update_cache: yes
     - name: Install base packages
       package:
-        name: ['unzip', 'vim', 'zsh', 'nginx', 'python3', 'python3-devel', 'wget', 'epel-release']
-        state: present
-      become: yes
-    - name: Install development tools
-      package:
-        name: "@development"
+        name: ['unzip', 
+               'vim', 
+               'zsh',
+               'nginx',
+               'wget',
+               'python3-pip',
+               'build-essential',
+               'libssl-dev',
+               'libffi-dev',
+               'python3-dev',
+               'python3-venv',
+               'docker.io'
+              ]
         state: present
       become: yes
     - name: terraform install
       unarchive:
-        src: https://releases.hashicorp.com/terraform/0.12.24/terraform_0.12.24_linux_amd64.zip
+        src: https://releases.hashicorp.com/terraform/0.14.2/terraform_0.14.2_linux_amd64.zip
         dest: /usr/local/bin
         remote_src: True
-    - name: Add Docker repo
-      get_url:
-        url: https://download.docker.com/linux/centos/docker-ce.repo
-        dest: /etc/yum.repos.d/docer-ce.repo
-      become: yes
-    - name: Install Docker
-      package:
-        name: docker-ce
-        state: latest
-      become: yes
-      ignore_errors: "{{ ansible_check_mode }}"
     - name: Start Docker service
       service:
         name: docker
@@ -40,17 +42,15 @@
         enabled: yes
       become: yes
       ignore_errors: "{{ ansible_check_mode }}"
-    - name: upload custom Nginx conf
-      template:
-        src: ../conf/nginx.conf.j2
-        dest: "/etc/nginx/nginx.conf"
     - name: Start Nginx service
       service:
-        name: docker
+        name: nginx
         state: started
         enabled: yes
-      become: yes
       ignore_errors: "{{ ansible_check_mode }}"
+    - name: Set python3 as default python
+      shell: 'update-alternatives --install /usr/bin/python python /usr/bin/python3 1'
+
 
 - name: Create and configure users
   import_playbook: create_users.yml      

@@ -2,6 +2,7 @@
 - name: Create and configure users
   gather_facts: No
   hosts: all
+  user: root
   tasks:
     - name: "Create user accounts and add users to groups"
       user:

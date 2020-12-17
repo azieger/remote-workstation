@@ -3,7 +3,7 @@
   gather_facts: No
   hosts: all
   become: yes
-  become_user: '{{ user }}'
+  become_user: '{{ workspace_user }}'
   tasks: 
     - name: Download zsh installer
       get_url: 
@@ -27,29 +27,29 @@
     - name: create script to run vscode
       template: 
         src: ../scripts/start-vscode.sh.j2
-        dest: /home/{{ user }}/start-vscode.sh
+        dest: /home/{{ workspace_user }}/start-vscode.sh
         mode: a+x
     - name: put .zshrc into home
       template: 
         src: ../conf/zshrc.j2
-        dest: /home/{{ user }}/.zshrc
+        dest: /home/{{ workspace_user }}/.zshrc
       ignore_errors: yes # only working if running from my local machine, not from ci-cd pipeline
     - name: put .vimrc into home
       template:
         src: ../conf/vimrc
-        dest: "/home/{{ user }}/.vimrc"
+        dest: "/home/{{ workspace_user }}/.vimrc"
     - name: privcate key for ssh and git 
       copy:
         src: ~/.ssh/id_rsa
-        dest: /home/{{ user }}/.ssh/id_rsa
+        dest: /home/{{ workspace_user }}/.ssh/id_rsa
         mode: g-rw,o-rw
       ignore_errors: yes # only working if running from my local machine, not from ci-cd pipeline
     - name: privcate key for ssh and git 
       copy:
         src: ~/.ssh/config
-        dest: /home/{{ user }}/.ssh/config
+        dest: /home/{{ workspace_user }}/.ssh/config
       ignore_errors: yes # only working if running from my local machine, not from ci-cd pipeline
     - name: "set zsh as default shell"
-      shell: usermod -s /bin/zsh {{ user }}
+      shell: usermod -s /bin/zsh {{ workspace_user }}
       become_user: root
 
