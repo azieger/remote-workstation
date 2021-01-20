@@ -38,13 +38,13 @@
       template:
         src: ../conf/vimrc
         dest: "/home/{{ workspace_user }}/.vimrc"
-    - name: privcate key for ssh and git 
+    - name: private key for ssh and git 
       copy:
         src: ~/.ssh/id_rsa
         dest: /home/{{ workspace_user }}/.ssh/id_rsa
         mode: g-rw,o-rw
       ignore_errors: yes # only working if running from my local machine, not from ci-cd pipeline
-    - name: privcate key for ssh and git 
+    - name: private key for ssh and git 
       copy:
         src: ~/.ssh/config
         dest: /home/{{ workspace_user }}/.ssh/config
@@ -52,4 +52,14 @@
     - name: "set zsh as default shell"
       shell: usermod -s /bin/zsh {{ workspace_user }}
       become_user: root
-
+    - name: Download miniconda installer
+      get_url: 
+        url: https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
+        dest: /tmp/miniconda-installer.sh
+        mode: a+x
+    - name: Execute miniconda installer
+      shell: /tmp/miniconda-installer.sh -b
+    - name: Activate miniconda
+      shell: ~/miniconda3/bin/activate
+    - name: Initialize miniconda
+      shell: ~/miniconda3/bin/conda init
