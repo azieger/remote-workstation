@@ -5,6 +5,15 @@
   become: yes
   become_user: '{{ workspace_user }}'
   tasks: 
+    - name: Create directories
+      file:
+        path: '{{ item }}'
+        state: directory
+        mode: '0755'
+      with_items: 
+        - ~/workspace
+        - ~/vscode_extensions
+        - ~/vscode_settings
     - name: Download zsh installer
       get_url: 
         url: https://github.com/robbyrussell/oh-my-zsh/raw/master/tools/install.sh
@@ -29,6 +38,14 @@
         src: ../scripts/start-vscode.sh.j2
         dest: /home/{{ workspace_user }}/start-vscode.sh
         mode: a+x
+    - name: Extract vscode extensions
+      unarchive:
+        src:  files/vscode_extensions.tar.gz
+        dest: /home/{{ workspace_user }}/
+    - name: Copy vscode settings to remote
+      copy:
+        src: files/vscode_settings.json
+        dest: /home/{{ workspace_user }}/vscode_settings/settings.json
     - name: put .zshrc into home
       template: 
         src: ../conf/zshrc.j2
@@ -62,4 +79,6 @@
     - name: Activate miniconda
       shell: ~/miniconda3/bin/activate
     - name: Initialize miniconda
-      shell: ~/miniconda3/bin/conda init
+      shell: ~/miniconda3/bin/conda init zsh
+    
+    

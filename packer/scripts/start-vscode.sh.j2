@@ -3,6 +3,8 @@ docker run -d \
   -e PUID=$(id -u) \
   -e PGID=$(id -g) \
   -p 8443:8443 \
-  -v "/home/{{ workspace_user }}/:/config/workspace" \
+  -v "/home/{{ workspace_user }}/workspace/:/config/workspace" \
+  -v "/home/{{ workspace_user }}/vscode_extensions:/config/extensions" \
+  -v "/home/{{ workspace_user }}/vscode_settings:/config/data/User/" \
   -e PASSWORD="{{ lookup('password', '/tmp/vscodepassword length=15') }}"\
   ghcr.io/linuxserver/code-server
