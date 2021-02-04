@@ -40,7 +40,7 @@
         mode: a+x
     - name: Extract vscode extensions
       unarchive:
-        src:  files/vscode_extensions.tar.gz
+        src:  files/vscode_extensions/vscode_extensions.tar.gz
         dest: /home/{{ workspace_user }}/
     - name: Copy vscode settings to remote
       copy:

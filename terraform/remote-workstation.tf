@@ -27,6 +27,26 @@ resource "digitalocean_droplet" "remote_workstation" {
   ssh_keys           = [var.workstation_ssh_key]
 }
 
+resource "digitalocean_firewall" "workstation-firewall" {
+  name        = "only-ssh"
+  droplet_ids = [digitalocean_droplet.remote_workstation.id]
+  inbound_rule {
+    protocol    = "tcp"
+    port_range  = "22"
+    source_addresses = ["0.0.0.0/0", "::/0"]
+  }
+  inbound_rule {
+    protocol    = "tcp"
+    port_range  = "8443"
+    source_addresses = ["0.0.0.0/0", "::/0"]
+  }
+  outbound_rule {
+    protocol              = "tcp"
+    port_range            = "1-65535"
+    destination_addresses = ["0.0.0.0/0", "::/0"]
+  }
+}
+
 # Update DNS record to avoid using ip 
 resource "digitalocean_record" "workstation_prefix" {
   domain = var.workstation_domain_name
@@ -36,6 +56,9 @@ resource "digitalocean_record" "workstation_prefix" {
   ttl    = 30
 }
 
+
+
 output "server_ip" {
   value = digitalocean_droplet.remote_workstation.ipv4_address
 }
+
