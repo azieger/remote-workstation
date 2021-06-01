@@ -1,4 +1,4 @@
-# In case I wan to store terraform state in DO spaces
+# In case I want to store terraform state in DO spaces
 # terraform {
 #   required_version = "= 0.14.2"
 #   backend "s3" {
