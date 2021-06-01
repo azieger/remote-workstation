@@ -1,8 +1,7 @@
 
 {
   "variables": {
-    "do_token": "{{env `TF_VAR_workstation_do_token`}}",
-    "cert_file_path": ""
+    "do_token": "{{env `TF_VAR_workstation_do_token`}}"
   },
   "builders": [
     {
