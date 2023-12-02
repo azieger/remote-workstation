@@ -1,0 +1,65 @@
+---
+- name: Setup Remote Workstation
+  gather_facts: yes
+  hosts: all
+  become: yes
+  become_user: root
+  tasks:
+    - name: Wait until cloud-init finishes
+      wait_for:
+        path: /var/lib/cloud/instance/boot-finished
+        sleep: 2
+        timeout: 300
+    - name: Install base packages
+      package:
+        name:
+          - 'unzip'
+          - 'vim'
+          - 'nginx'
+          - 'wget'
+          - 'apt-transport-https'
+          - 'ca-certificates'
+          - 'curl'
+          - 'gnupg2'
+          - 'software-properties-common'
+          - 'unzip'
+          - 'acl'
+          - 'zsh'
+        update_cache: yes
+    - name: Add Docker GPG key
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+    - name: Add Docker APT repository
+      apt_repository:
+        repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ansible_distribution_release}} stable
+    - name: Install Docker CE
+      apt:
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+          - docker-compose-plugin
+        update_cache: yes
+    - name: Install Terraform
+      unarchive:
+        src: https://releases.hashicorp.com/terraform/1.5.5/terraform_1.5.5_linux_amd64.zip
+        dest: /usr/local/bin
+        remote_src: True
+    - name: Install Packer
+      unarchive:
+        src: https://releases.hashicorp.com/packer/1.8.5/packer_1.8.5_darwin_amd64.zip
+        dest: /usr/local/bin
+        remote_src: true
+    - name: Start Docker service
+      service:
+        name: docker
+        state: started
+        enabled: yes
+      ignore_errors: "{{ ansible_check_mode }}"
+
+
+- name: Create and configure users
+  import_playbook: create_users.yml
+
+- name: Custom setup
+  import_playbook: customize_workspace.yml

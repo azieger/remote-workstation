@@ -1,0 +1,80 @@
+---
+- name: Custom setup for my user
+  gather_facts: No
+  hosts: all
+  become: yes
+  become_user: '{{ workspace_user }}'
+  tasks:
+    - name: Create directories
+      file:
+        path: '{{ item }}'
+        state: directory
+        mode: '0755'
+      with_items:
+        - ~/workspace
+        - ~/vscode_extensions
+        - ~/vscode_settings
+    - name: Download zsh installer
+      get_url:
+        url: https://github.com/robbyrussell/oh-my-zsh/raw/master/tools/install.sh
+        dest: /tmp/zsh-installer.sh
+        mode: a+x
+    - name: Execute the zsh-installer.sh
+      shell: /tmp/zsh-installer.sh --unattended
+    - name: Remove the zsh-installer.sh
+      file: path=/tmp/zsh-installer.sh state=absent
+    - name: install vim plugin manager
+      shell: "mkdir -p ~/.vim/autoload ~/.vim/bundle && curl -LSso ~/.vim/autoload/pathogen.vim https://tpo.pe/pathogen.vim"
+    - name: install terraform vim  plugin
+      git:
+        repo: 'https://github.com/hashivim/vim-terraform.git'
+        dest: ~/.vim/bundle/vim-terraform
+    - name: install vim tabular plugin
+      git:
+        repo: 'https://github.com/godlygeek/tabular.git'
+        dest: ~/.vim/bundle/tabular
+    - name: create script to run vscode
+      template:
+        src: ./files/start-vscode.sh.j2
+        dest: /home/{{ workspace_user }}/start-vscode.sh
+        mode: a+x
+    - name: Extract vscode extensions
+      unarchive:
+        src:  files/vscode_extensions/vscode_extensions.tar.gz
+        dest: /home/{{ workspace_user }}/
+    - name: Copy vscode settings to remote
+      copy:
+        src: ./files/vscode_settings.json
+        dest: /home/{{ workspace_user }}/vscode_settings/settings.json
+    - name: put .zshrc into home
+      template:
+        src: ./files/zshrc.j2
+        dest: /home/{{ workspace_user }}/.zshrc
+      ignore_errors: yes # only working if running from my local machine, not from ci-cd pipeline
+    - name: put .vimrc into home
+      template:
+        src: ./files/vimrc
+        dest: "/home/{{ workspace_user }}/.vimrc"
+    - name: private key to host
+      copy:
+        src: ~/.ssh/id_rsa
+        dest: /home/{{ workspace_user }}/.ssh/id_rsa
+        mode: g-rw,o-rw
+      ignore_errors: yes # only working if running from my local machine, not from ci-cd pipeline
+    - name: ssh config to host
+      copy:
+        src: ~/.ssh/config
+        dest: /home/{{ workspace_user }}/.ssh/config
+      ignore_errors: yes # only working if running from my local machine, not from ci-cd pipeline
+    - name: "set zsh as default shell"
+      shell: usermod -s /bin/zsh {{ workspace_user }}
+      become_user: root
+    - name: Download miniconda installer
+      get_url:
+        url: https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
+        dest: /tmp/miniconda-installer.sh
+        mode: a+x
+    - name: Execute miniconda installer
+      shell: bash /tmp/miniconda-installer.sh -f -b -p /home/{{ workspace_user }}/miniconda
+    - name: Initalize miniconda
+      shell: /home/{{ workspace_user }}/miniconda/bin/conda init zsh

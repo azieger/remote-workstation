@@ -1,0 +1,39 @@
+---
+- name: Create and configure users
+  gather_facts: No
+  hosts: all
+  become: yes
+  become_user: root
+  tasks:
+    - name: "Create user accounts and add users to groups"
+      user:
+        name: "{{ item.username }}"
+        groups: "{{ item.groups }}"
+        append: yes
+        password_lock: yes
+      with_items: "{{ users_to_install }}"
+    - name: "Add authorized keys"
+      authorized_key:
+        user: "{{ item.username }}"
+        key: "{{ lookup('env', item.username + '_public_key') }}"
+      with_items: "{{ users_to_install }}"
+    - name: "Allow user to sudo without a password"
+      lineinfile:
+        dest: "/etc/sudoers"
+        state: "present"
+        regexp: "^{{ item.username }}"
+        line: "{{ item.username }} ALL=(ALL) NOPASSWD: ALL"
+      with_items: "{{ users_to_install }}"
+    - name: Disable root login over SSH
+      lineinfile:
+        dest: /etc/ssh/sshd_config
+        regexp: "^PermitRootLogin"
+        line: "PermitRootLogin no"
+        state: present
+    - name: Disable password login
+      lineinfile:
+        dest: /etc/ssh/sshd_config
+        regexp: "^PasswordAuthentication"
+        line: "PasswordAuthentication no"
+        state: present
+

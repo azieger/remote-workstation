@@ -1,0 +1,12 @@
+
+# Local .terraform directories
+**/.terraform/*
+*.terraform.*
+# .tfstate files
+*.tfstate
+*.tfstate.*
+*plan.out
+*.tfvars
+
+*.DS_Store
+*hosts
